@@ -22,8 +22,15 @@ import com.baidubce.services.vca.model.QueryResultResponse;
 import com.baidubce.services.vca.model.AnalyzeRequest;
 import com.baidubce.services.vca.model.QuerySubTaskRequest;
 import com.baidubce.services.vca.model.QuerySubTaskResponse;
+import com.baidubce.services.vca.model.FaceLibCreate;
+import com.baidubce.services.vca.model.FaceArtAdd;
+import com.baidubce.services.vca.model.FaceLibsResults;
+import com.baidubce.services.vca.model.FaceLibRequest;
+import com.baidubce.services.vca.model.FaceLibImageResults;
+import com.baidubce.services.vca.model.FaceLibBriefResults;
 import com.baidubce.util.HttpUtils;
 import com.baidubce.util.JsonUtils;
+import com.baidubce.BceErrorResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -216,6 +223,7 @@ public class VcaClient extends AbstractBceClient {
         }
 
         URI uri = HttpUtils.appendUri(getEndpoint(), pathComponents.toArray(new String[pathComponents.size()]));
+        //System.out.println("createRequest =====================" + uri.toString());
 
         // get a InternalRequest instance and set headers
         InternalRequest internalRequest = new InternalRequest(httpMethod, uri);
@@ -229,6 +237,7 @@ public class VcaClient extends AbstractBceClient {
 
     private InternalRequest fillRequestPayload(InternalRequest internalRequest, AbstractBceRequest request) {
         String strJson = JsonUtils.toJsonString(request);
+        //System.out.println("fillRequestPayload =====================" + strJson);
         byte[] requestJson = null;
         try {
             requestJson = strJson.getBytes(DEFAULT_ENCODING);
@@ -241,5 +250,111 @@ public class VcaClient extends AbstractBceClient {
         internalRequest.setContent(RestartableInputStream.wrap(requestJson));
 
         return internalRequest;
+    }
+
+    /**
+     * Initiate media analyze for specified source and title.
+     *
+     * @param lib libname.
+     * @param description lib description.
+     * @return Analyze response.
+     */
+    public BceErrorResponse faceLibCreate(String lib, String description) {
+        FaceLibCreate request = new FaceLibCreate();
+        request.setLib(lib);
+        request.setDescription(description);
+        return face(request);
+    }
+
+    /**
+     * Initiate media analyze for specified source.
+     *
+     * @param request Analyze request, including media source path.
+     * @return Analyze response.
+     */
+    public BceErrorResponse face(FaceLibCreate request) {
+        InternalRequest internalRequest = createRequest(HttpMethodName.POST,
+                request, "face", "lib");
+                
+        BceErrorResponse err = new BceErrorResponse();
+        try {
+            this.invokeHttpClient(internalRequest, AnalyzeResponse.class);
+            
+           err.setCode("200");
+           err.setMessage("create lib success!");
+
+        } catch (Exception e) {
+            err.setCode("500");
+            err.setMessage("create lib faile!");
+        }
+        return err;
+    }
+
+    /**
+     * Initiate media analyze for specified source and title.
+     *
+     * @param lib libname.
+     * @param description lib description.
+     * @return Analyze response.
+     */
+    public AnalyzeResponse faceArtAdd(String lib, String image, String brief) {
+        FaceArtAdd request = new FaceArtAdd();
+        request.setImage(image);
+        request.setBrief(brief);
+        return art(request, lib);
+    }
+
+    /**
+     * Initiate media analyze for specified source.
+     *
+     * @param request Analyze request, including media source path.
+     * @return Analyze response.
+     */
+    public AnalyzeResponse art(FaceArtAdd request, String lib) {
+        InternalRequest internalRequest = createRequest(HttpMethodName.POST,
+                request, "face", "lib", lib);
+
+        
+        return this.invokeHttpClient(internalRequest, AnalyzeResponse.class);
+    }
+
+    
+    /**
+     * Initiate media analyze for specified source and title.
+     *
+     * @return FaceLibsResults response.
+     */
+    public FaceLibsResults faceLibsGet() {
+        FaceLibRequest request = new FaceLibRequest();
+        return libs(request);
+    }
+
+    public FaceLibsResults libs(FaceLibRequest request) {
+        InternalRequest internalRequest = createRequest(HttpMethodName.GET,
+                request, "face", "lib");
+        return this.invokeHttpClient(internalRequest, FaceLibsResults.class);
+    }
+
+    public FaceLibBriefResults faceLibBriefsGet(String lib){
+        FaceLibRequest request = new FaceLibRequest();
+        return briefs(request,lib);
+    }
+
+    public FaceLibBriefResults briefs(FaceLibRequest request,String libname) {
+        InternalRequest internalRequest = createRequest(HttpMethodName.GET,
+                request, "face", "lib", libname);
+        return this.invokeHttpClient(internalRequest, FaceLibBriefResults.class);
+    }
+
+    public FaceLibImageResults faceLibImagesGet(String lib, String brief){
+        FaceLibRequest request = new FaceLibRequest();
+        return images(request, lib, brief);
+    }
+
+    public FaceLibImageResults images(FaceLibRequest request,String libname, String brief) {
+        InternalRequest internalRequest = createRequest(HttpMethodName.GET,
+                request, "face", "lib", libname);
+        internalRequest.addParameter("brief", brief);
+        return this.invokeHttpClient(internalRequest, FaceLibImageResults.class);
     }
 }
