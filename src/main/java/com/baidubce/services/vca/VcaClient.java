@@ -26,6 +26,7 @@ import com.baidubce.services.vca.model.FaceLibCreate;
 import com.baidubce.services.vca.model.FaceArtAdd;
 import com.baidubce.services.vca.model.FaceLibsResults;
 import com.baidubce.services.vca.model.FaceLibRequest;
+import com.baidubce.services.vca.model.FaceLibResultItem;
 import com.baidubce.services.vca.model.FaceLibImageResults;
 import com.baidubce.services.vca.model.FaceLibBriefResults;
 import com.baidubce.util.HttpUtils;
@@ -260,6 +261,17 @@ public class VcaClient extends AbstractBceClient {
      * @return Analyze response.
      */
     public BceErrorResponse faceLibCreate(String lib, String description) {
+
+        FaceLibsResults faceLibs = faceLibsGet();
+        List<FaceLibResultItem> libs = faceLibs.getLibs();
+        for (FaceLibResultItem item : libs) {
+            if(lib.equals(item.getLib()) ){
+                BceErrorResponse err = new BceErrorResponse();
+                err.setCode("200");
+                err.setMessage("lib exist !");
+                return err;
+            }
+        }
         FaceLibCreate request = new FaceLibCreate();
         request.setLib(lib);
         request.setDescription(description);
