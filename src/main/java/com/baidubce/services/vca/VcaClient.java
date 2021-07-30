@@ -309,7 +309,7 @@ public class VcaClient extends AbstractBceClient {
      * @param description lib description.
      * @return Analyze response.
      */
-    public AnalyzeResponse faceArtAdd(String lib, String image, String brief) {
+    public BceErrorResponse faceArtAdd(String lib, String image, String brief) {
         FaceArtAdd request = new FaceArtAdd();
         request.setImage(image);
         request.setBrief(brief);
@@ -322,12 +322,19 @@ public class VcaClient extends AbstractBceClient {
      * @param request Analyze request, including media source path.
      * @return Analyze response.
      */
-    public AnalyzeResponse art(FaceArtAdd request, String lib) {
-        InternalRequest internalRequest = createRequest(HttpMethodName.POST,
-                request, "face", "lib", lib);
+    public BceErrorResponse art(FaceArtAdd request, String lib) {
+        InternalRequest internalRequest = createRequest(HttpMethodName.POST, request, "face", "lib", lib);
 
-        
-        return this.invokeHttpClient(internalRequest, AnalyzeResponse.class);
+        BceErrorResponse err = new BceErrorResponse();
+        try {
+            this.invokeHttpClient(internalRequest, AnalyzeResponse.class);
+            err.setCode("200");
+            err.setMessage("face images add success!");
+        } catch (Exception e) {
+            err.setCode("500");
+            err.setMessage(e.toString());
+        }
+        return err;
     }
 
     
