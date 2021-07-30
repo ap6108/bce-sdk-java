@@ -291,10 +291,8 @@ public class VcaClient extends AbstractBceClient {
         BceErrorResponse err = new BceErrorResponse();
         try {
             this.invokeHttpClient(internalRequest, AnalyzeResponse.class);
-            
-           err.setCode("200");
-           err.setMessage("create lib success!");
-
+            err.setCode("200");
+            err.setMessage("create lib success!");
         } catch (Exception e) {
             err.setCode("500");
             err.setMessage("create lib faile!");
