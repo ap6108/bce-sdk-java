@@ -329,8 +329,14 @@ public class VcaClient extends AbstractBceClient {
             err.setCode("200");
             err.setMessage("face images add success!");
         } catch (Exception e) {
-            err.setCode("500");
-            err.setMessage(e.toString());
+
+            if(e.toString().contains("GatewayTimeout")){
+                err.setCode("200");
+                err.setMessage("face images add success!");
+            }else{
+                err.setCode("500");
+                err.setMessage(e.toString());
+            }
         }
         return err;
     }
